@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -112,6 +112,45 @@ namespace VehicleRentalService
         }
     }
 
+    public class Bike : Vehicle
+    {
+        public string Name
+        {
+            get
+            {
+                return "bike";
+            }
+            set { }
+        }
+
+        public Bike(string name)
+        {
+            this.Name = name;
+        }
+
+        private List<TimeSlot> _bookedSlots = null;
+
+        public int cost { get; set; } = 0;
+        public List<TimeSlot> BookedSlots
+        {
+            get
+            {
+                if (_bookedSlots == null)
+                {
+                    _bookedSlots = new List<TimeSlot>();
+                }
+                return _bookedSlots;
+            }
+        }
+
+        public string Branch { get; set; } = "";
+
+        public int CompareTo(Vehicle other)
+        {
+            return this.cost.CompareTo(other.cost);
+        }
+    }
+
     public class Branch
     {
         public string Name
@@ -178,13 +217,15 @@ namespace VehicleRentalService
         private static void AddTestCases(List<string> testCases)
         {
             testCases.Add("add_branch('gachibowli', ['1 suv for Rs.12 per hour', '3 sedan for Rs.10 per hour'])");
-            testCases.Add("add_branch('miyapur', ['3 sedan for Rs.9 per hour'])");
+            testCases.Add("add_branch('miyapur', ['3 sedan for Rs.9 per hour', '2 bike for Rs.5 per hour'])");
             testCases.Add("add_vehicle('gachibowli', '1 sedan')");
             testCases.Add("print_system_view(20-02-2019 10:00:00 PM, 21-02-2019 01:00:00 AM)");
+            testCases.Add("add_vehicle('miyapur', '10 bike')");
             testCases.Add("rent_vehicle('suv', 20-02-2019 10:00:00 PM, 21-02-2019 01:00:00 AM)");
             testCases.Add("rent_vehicle('sedan', 20-02-2019 10:00:00 PM, 21-02-2019 01:00:00 AM)");
             testCases.Add("rent_vehicle('suv', 20-02-2019 11:00:00 PM, 21-02-2019 01:00:00 AM)");
             testCases.Add("rent_vehicle('suv', 21-02-2019 01:00:00 AM, 21-02-2019 03:00:00 AM)");
+            testCases.Add("rent_vehicle('bike', 20-02-2019 11:00:00 PM, 21-02-2019 03:00:00 AM)");
             testCases.Add("get_available_vehicles('gachibowli')");
             testCases.Add("print_system_view(20-02-2019 10:00:00 PM, 21-02-2019 01:00:00 AM)");
         }
@@ -287,16 +328,21 @@ namespace VehicleRentalService
         {
             string vehicleStr = inp.Substring(inp.IndexOf(',') + 3, inp.IndexOf(')') - 2 - inp.IndexOf(',') - 2);
             string vehStr = vehicleStr.Split()[1];
-            Vehicle vehObj = getInstanceOfVehicle(vehStr);
-            vehObj.Branch = b.Name;
-            vehObj.cost = b.vehicles[vehStr][0].cost;
-            AddVehicleToBranchUtil(b, vehStr, vehObj);
+            int noOfV = int.Parse(vehicleStr.Split()[0]);
+            for (int i = 0; i < noOfV; i++)
+            {
+                Vehicle vehObj = getInstanceOfVehicle(vehStr);
+                vehObj.Branch = b.Name;
+                vehObj.cost = b.vehicles[vehStr][0].cost;
+                AddVehicleToBranchUtil(b, vehStr, vehObj);
+            }
         }
 
         private static void PopulateAvailableVehicles(Dictionary<string, Type> vehicleDic)
         {
             vehicleDic.Add("suv", typeof(Suv));
             vehicleDic.Add("sedan", typeof(Sedan));
+            vehicleDic.Add("bike", typeof(Bike));
         }
 
         private static void AddVehiclesToBranch(Branch branch, List<string> vs)
